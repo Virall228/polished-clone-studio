@@ -1,73 +1,95 @@
-# Welcome to your Lovable project
+# WAY Esports - Complete Clone
 
-## Project info
+Mini app for Telegram with professional esports functionality.
 
-**URL**: https://lovable.dev/projects/7d314571-55d6-4ef0-adbb-7c5395179595
+## 🚀 Quick Start
 
-## How can I edit this code?
+1. Clone and install dependencies:
+```bash
+git clone <repo_url>
+cd way-esports
+npm install
+```
 
-There are several ways of editing your application.
+2. Configure environment:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/7d314571-55d6-4ef0-adbb-7c5395179595) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🎨 UI Enhancement Flag
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The project includes `ENABLE_POLISHED_UI` functionality:
 
-**Use GitHub Codespaces**
+- **Original Mode** (`ENABLE_POLISHED_UI=false`): Exact 1:1 parity with original design
+- **Polished Mode** (`ENABLE_POLISHED_UI=true`): Enhanced UI with improved animations, gradients, and interactions
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Configure in `src/config/env.ts` or via environment variables.
 
-## What technologies are used for this project?
+## 📁 Project Structure
 
-This project is built with:
+```
+src/
+├── components/          # Reusable UI components
+├── contexts/           # React contexts (App, Auth, Notifications)
+├── pages/             # Main application pages
+│   ├── Home/          # Dashboard and live matches
+│   ├── Teams/         # Team management and rankings
+│   ├── Tournaments/   # Tournament system
+│   ├── News/          # News and announcements
+│   └── Profile/       # User profiles
+├── styles/            # Theme and styling system
+├── types/             # TypeScript definitions
+├── config/            # Environment configuration
+└── hooks/             # Custom React hooks
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🛠 Tech Stack
 
-## How can I deploy this project?
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Styled Components + Custom Theme System
+- **Routing**: React Router v6
+- **Icons**: React Feather
+- **Platform**: Telegram Mini Apps
 
-Simply open [Lovable](https://lovable.dev/projects/7d314571-55d6-4ef0-adbb-7c5395179595) and click on Share -> Publish.
+## 🎮 Features Implemented
 
-## Can I connect a custom domain to my Lovable project?
+### Core Pages
+- ✅ **Home Dashboard** - Live matches, statistics, news feed
+- ✅ **Teams System** - Team creation, member management, rankings
+- ✅ **Tournaments** - Tournament listing, registration, brackets
+- ✅ **News System** - Article creation, categorization, search
+- ✅ **User Profiles** - Profile management and statistics
 
-Yes, you can!
+### Advanced Features
+- ✅ **Notification System** - Toast notifications + browser notifications
+- ✅ **Authentication** - Mock auth system with Telegram integration
+- ✅ **Responsive Design** - Mobile-first design for Telegram WebApp
+- ✅ **Theme System** - Professional ESL-style dark theme
+- ✅ **State Management** - React Context + useReducer patterns
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🔧 Available Scripts
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## 🌐 Environment Variables
+
+See `.env.example` for all available configuration options.
+
+## 📱 Telegram Integration
+
+Fully integrated with Telegram WebApp API:
+- Auto-initialization on app load
+- User data extraction from Telegram
+- Native Telegram UI integration
+
+---
+
+**Status**: ✅ Complete 1:1 functional parity with original + polished UI enhancements
