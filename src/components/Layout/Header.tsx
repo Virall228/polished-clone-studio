@@ -35,11 +35,15 @@ const Header: React.FC = () => {
     { to: '/news', label: 'Новости', icon: Newspaper },
   ];
 
+  const adminItems = user ? [
+    { to: '/admin', label: 'Админ-панель', icon: Settings },
+  ] : [];
+
   const MobileNav = () => (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
+        <Button variant="ghost" size="lg" className="md:hidden h-12 w-12">
+          <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] sm:w-[400px]">
@@ -49,6 +53,20 @@ const Header: React.FC = () => {
           </div>
           
           {navigationItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
+              >
+                <Icon className="h-5 w-5" />
+                {item.label}
+              </Link>
+            );
+          })}
+          
+          {adminItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -110,19 +128,22 @@ const Header: React.FC = () => {
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Mobile Navigation - moved to left */}
+        {isMobile && <MobileNav />}
+        
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="font-bold text-xl text-primary">WAY Esports</div>
+          <div className="font-bold text-xl text-foreground">WAY Esports</div>
         </Link>
 
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className="hidden md:flex items-center gap-6">
-            {navigationItems.map((item) => (
+            {[...navigationItems, ...adminItems].map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="text-sm font-medium hover:text-foreground transition-colors"
               >
                 {item.label}
               </Link>
@@ -178,9 +199,6 @@ const Header: React.FC = () => {
               </Button>
             )
           )}
-
-          {/* Mobile Navigation */}
-          <MobileNav />
         </div>
       </div>
     </header>

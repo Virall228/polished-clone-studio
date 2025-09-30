@@ -11,6 +11,7 @@ import Tournaments from '@/pages/Tournaments';
 import News from '@/pages/News';
 import Profile from '@/pages/Profile';
 import Auth from '@/pages/Auth';
+import Admin from '@/pages/Admin';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <Admin />
                 </ProtectedRoute>
               } 
             />
