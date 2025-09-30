@@ -1,432 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { eslTheme } from '../../styles/esl-theme';
-import { useApp } from '../../contexts/AppContext';
-import { useToast } from '../../contexts/NotificationContext';
-import { News } from '../../types';
-import { FileText, Plus, Search, Filter, Calendar, User, Eye } from 'react-feather';
-
-const NewsContainer = styled.div`
-  min-height: 100vh;
-  background: ${eslTheme.colors.bg.primary};
-  color: ${eslTheme.colors.text.primary};
-  padding: 2rem;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  
-  @media (max-width: ${eslTheme.breakpoints.tablet}) {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-`;
-
-const PageTitle = styled.h1`
-  font-family: ${eslTheme.fonts.accent};
-  font-size: 2.5rem;
-  font-weight: ${eslTheme.fontWeights.bold};
-  color: ${eslTheme.colors.white};
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin: 0;
-`;
-
-const CreateButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid ${eslTheme.colors.white};
-  background: ${eslTheme.colors.white};
-  color: ${eslTheme.colors.black};
-  border-radius: ${eslTheme.borderRadius.md};
-  font-family: ${eslTheme.fonts.accent};
-  font-weight: ${eslTheme.fontWeights.medium};
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all ${eslTheme.transitions.fast};
-  
-  &:hover {
-    transform: translateY(-1px);
-    background: ${eslTheme.colors.text.secondary};
-  }
-`;
-
-const FiltersBar = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: ${eslTheme.colors.bg.secondary};
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.lg};
-  
-  @media (max-width: ${eslTheme.breakpoints.tablet}) {
-    flex-direction: column;
-  }
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background: ${eslTheme.colors.bg.tertiary};
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.md};
-  color: ${eslTheme.colors.text.primary};
-  font-family: ${eslTheme.fonts.primary};
-  
-  &::placeholder {
-    color: ${eslTheme.colors.text.tertiary};
-  }
-  
-  &:focus {
-    outline: none;
-    border-color: ${eslTheme.colors.white};
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 0.75rem 1rem;
-  background: ${eslTheme.colors.bg.tertiary};
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.md};
-  color: ${eslTheme.colors.text.primary};
-  font-family: ${eslTheme.fonts.primary};
-  cursor: pointer;
-  
-  &:focus {
-    outline: none;
-    border-color: ${eslTheme.colors.white};
-  }
-`;
-
-const NewsGrid = styled.div`
-  display: grid;
-  gap: 1.5rem;
-`;
-
-const NewsCard = styled.article<{ polished?: boolean }>`
-  background: ${props => props.polished ? 
-    `linear-gradient(135deg, ${eslTheme.colors.bg.secondary} 0%, ${eslTheme.colors.bg.tertiary} 100%)` :
-    eslTheme.colors.bg.secondary
-  };
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.lg};
-  overflow: hidden;
-  transition: all ${eslTheme.transitions.medium};
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-2px);
-    border-color: ${eslTheme.colors.border.medium};
-    background: ${props => props.polished ? 
-      `linear-gradient(135deg, ${eslTheme.colors.bg.tertiary} 0%, ${eslTheme.colors.bg.elevated} 100%)` :
-      eslTheme.colors.bg.elevated
-    };
-    box-shadow: ${eslTheme.shadows.lg};
-  }
-`;
-
-const NewsImage = styled.div<{ image?: string }>`
-  height: 200px;
-  background: ${props => props.image ? 
-    `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(${props.image})` :
-    `linear-gradient(135deg, ${eslTheme.colors.bg.tertiary} 0%, ${eslTheme.colors.bg.elevated} 100%)`
-  };
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  color: ${eslTheme.colors.text.secondary};
-`;
-
-const NewsContent = styled.div`
-  padding: 1.5rem;
-`;
-
-const NewsHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-`;
-
-const NewsTitle = styled.h2`
-  font-family: ${eslTheme.fonts.accent};
-  font-size: 1.5rem;
-  font-weight: ${eslTheme.fontWeights.bold};
-  color: ${eslTheme.colors.white};
-  margin: 0;
-  line-height: 1.3;
-  flex: 1;
-  margin-right: 1rem;
-`;
-
-const CategoryBadge = styled.div<{ category: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: ${eslTheme.borderRadius.full};
-  font-size: 0.75rem;
-  font-weight: ${eslTheme.fontWeights.medium};
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  
-  ${props => {
-    switch (props.category) {
-      case 'tournament':
-        return `
-          background: ${eslTheme.colors.warning}20;
-          color: ${eslTheme.colors.warning};
-          border: 1px solid ${eslTheme.colors.warning}40;
-        `;
-      case 'team':
-        return `
-          background: ${eslTheme.colors.info}20;
-          color: ${eslTheme.colors.info};
-          border: 1px solid ${eslTheme.colors.info}40;
-        `;
-      case 'player':
-        return `
-          background: ${eslTheme.colors.success}20;
-          color: ${eslTheme.colors.success};
-          border: 1px solid ${eslTheme.colors.success}40;
-        `;
-      default:
-        return `
-          background: ${eslTheme.colors.bg.elevated};
-          color: ${eslTheme.colors.text.secondary};
-          border: 1px solid ${eslTheme.colors.border.light};
-        `;
-    }
-  }}
-`;
-
-const NewsExcerpt = styled.p`
-  color: ${eslTheme.colors.text.secondary};
-  line-height: 1.6;
-  margin: 1rem 0;
-`;
-
-const NewsFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid ${eslTheme.colors.border.light};
-  font-size: 0.875rem;
-  color: ${eslTheme.colors.text.tertiary};
-`;
-
-const NewsAuthor = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const NewsStats = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const StatItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${eslTheme.colors.text.tertiary};
-`;
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { useAuth } from '@/hooks/useAuth';
+import { Newspaper, Plus, Search, Calendar, Eye, User } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const NewsPage: React.FC = () => {
-  const { state } = useApp();
-  const toast = useToast();
-  const [news, setNews] = useState<News[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  const isPolished = state.uiMode === 'polished';
+  const { data: news, loading } = useSupabaseData('news', (query) => 
+    query.select(`
+      *,
+      profiles:author_id(username, avatar_url)
+    `).eq('status', 'published').order('published_at', { ascending: false })
+  );
 
-  useEffect(() => {
-    loadNews();
-  }, []);
-
-  const loadNews = async () => {
-    try {
-      setLoading(true);
-      
-      // Mock news data
-      const mockNews: News[] = [
-        {
-          id: '1',
-          title: 'WAY Esports Wins Championship 2024',
-          content: 'In an epic finale, WAY Esports secured their victory in the Championship 2024...',
-          excerpt: 'WAY Esports dominated the final match with exceptional teamwork and strategy.',
-          author: { id: '1', username: 'NewsTeam', role: 'admin', isOnline: true, joinedAt: new Date() } as any,
-          publishedAt: new Date('2024-10-20'),
-          createdAt: new Date('2024-10-20'),
-          updatedAt: new Date('2024-10-20'),
-          status: 'published',
-          tags: ['championship', 'victory', 'esports'],
-          category: 'tournament',
-          views: 1247
-        },
-        {
-          id: '2',
-          title: 'New Player Joins WAY Esports Roster',
-          content: 'We are excited to announce the addition of a new talented player to our roster...',
-          excerpt: 'Professional player "ProGamer" brings years of experience to strengthen our team.',
-          author: { id: '1', username: 'NewsTeam', role: 'admin', isOnline: true, joinedAt: new Date() } as any,
-          publishedAt: new Date('2024-10-18'),
-          createdAt: new Date('2024-10-18'),
-          updatedAt: new Date('2024-10-18'),
-          status: 'published',
-          tags: ['roster', 'player', 'announcement'],
-          category: 'team',
-          views: 856
-        },
-        {
-          id: '3',
-          title: 'Upcoming Tournament Schedule Released',
-          content: 'The schedule for the upcoming season has been announced...',
-          excerpt: 'Mark your calendars for the most exciting esports tournaments of the year.',
-          author: { id: '1', username: 'NewsTeam', role: 'admin', isOnline: true, joinedAt: new Date() } as any,
-          publishedAt: new Date('2024-10-15'),
-          createdAt: new Date('2024-10-15'),
-          updatedAt: new Date('2024-10-15'),
-          status: 'published',
-          tags: ['tournament', 'schedule', 'announcement'],
-          category: 'tournament',
-          views: 623
-        }
-      ];
-
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setNews(mockNews);
-      toast.success('News loaded successfully');
-    } catch (error) {
-      console.error('Failed to load news:', error);
-      toast.error('Failed to load news');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredNews = news.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredNews = news.filter((article: any) => {
+    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.excerpt?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || article.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  const handleCreateNews = () => {
-    toast.info('News creation feature coming soon!');
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const getCategoryVariant = (category: string) => {
+    const variants: Record<string, any> = {
+      tournament: 'default',
+      team: 'secondary',
+      player: 'outline',
+      announcement: 'destructive',
+      general: 'secondary',
+    };
+    return variants[category] || 'secondary';
   };
 
   if (loading) {
     return (
-      <NewsContainer>
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
-          <div>Loading news...</div>
-        </div>
-      </NewsContainer>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
   return (
-    <NewsContainer>
-      <PageHeader>
-        <PageTitle>
-          <FileText size={32} style={{ marginRight: '1rem', display: 'inline' }} />
-          News
-        </PageTitle>
-        <CreateButton onClick={handleCreateNews}>
-          <Plus size={18} />
-          Create News
-        </CreateButton>
-      </PageHeader>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <Newspaper className="h-8 w-8" />
+          <h1 className="text-3xl font-bold">Новости</h1>
+        </div>
+        {user && (
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Создать новость
+          </Button>
+        )}
+      </div>
 
-      <FiltersBar>
-        <SearchInput
-          type="text"
-          placeholder="Search news..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <FilterSelect value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-          <option value="all">All Categories</option>
-          <option value="tournament">Tournaments</option>
-          <option value="team">Teams</option>
-          <option value="player">Players</option>
-          <option value="announcement">Announcements</option>
-          <option value="general">General</option>
-        </FilterSelect>
-      </FiltersBar>
+      <Card className="p-4 mb-6">
+        <div className="flex gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск новостей..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Все категории" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все категории</SelectItem>
+              <SelectItem value="tournament">Турниры</SelectItem>
+              <SelectItem value="team">Команды</SelectItem>
+              <SelectItem value="player">Игроки</SelectItem>
+              <SelectItem value="announcement">Объявления</SelectItem>
+              <SelectItem value="general">Общее</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </Card>
 
       {filteredNews.length > 0 ? (
-        <NewsGrid>
-          {filteredNews.map((article) => (
-            <NewsCard key={article.id} polished={isPolished}>
-              <NewsImage>
-                📰
-              </NewsImage>
-              <NewsContent>
-                <NewsHeader>
-                  <NewsTitle>{article.title}</NewsTitle>
-                  <CategoryBadge category={article.category}>
-                    {article.category}
-                  </CategoryBadge>
-                </NewsHeader>
-                
-                <NewsExcerpt>{article.excerpt}</NewsExcerpt>
-                
-                <NewsFooter>
-                  <NewsAuthor>
-                    <User size={16} />
-                    {article.author.username}
-                    <span>•</span>
-                    <Calendar size={16} />
-                    {formatDate(article.publishedAt!)}
-                  </NewsAuthor>
-                  <NewsStats>
-                    <StatItem>
-                      <Eye size={16} />
-                      {article.views.toLocaleString()}
-                    </StatItem>
-                  </NewsStats>
-                </NewsFooter>
-              </NewsContent>
-            </NewsCard>
+        <div className="grid gap-6">
+          {filteredNews.map((article: any) => (
+            <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="flex flex-col md:flex-row">
+                {article.cover_image_url && (
+                  <div 
+                    className="w-full md:w-64 h-48 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${article.cover_image_url})` }}
+                  />
+                )}
+                <div className="flex-1 p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <h2 className="text-2xl font-bold flex-1">{article.title}</h2>
+                    <Badge variant={getCategoryVariant(article.category)}>
+                      {article.category}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-muted-foreground mb-4 line-clamp-2">
+                    {article.excerpt}
+                  </p>
+
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback>
+                            <User className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{article.profiles?.username || 'Аноним'}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {article.published_at 
+                            ? format(new Date(article.published_at), 'dd MMM yyyy')
+                            : 'TBA'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-4 w-4" />
+                      <span>{article.views?.toLocaleString() || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
           ))}
-        </NewsGrid>
+        </div>
       ) : (
-        <EmptyState>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📰</div>
-          <h3>No news found</h3>
-          <p>Be the first to create and share esports news!</p>
-        </EmptyState>
+        <div className="text-center py-12">
+          <Newspaper className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-xl font-semibold mb-2">Новости не найдены</h3>
+          <p className="text-muted-foreground">Создайте первую новость!</p>
+        </div>
       )}
-    </NewsContainer>
+    </div>
   );
 };
 
