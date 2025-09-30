@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { NotificationProvider } from '@/contexts/NotificationContext';
 import Header from '@/components/Layout/Header';
 import ProtectedRoute from '@/components/Layout/ProtectedRoute';
 
@@ -16,32 +15,30 @@ import NotFound from '@/pages/NotFound';
 
 function App() {
   return (
-    <NotificationProvider>
-      <Router>
-        <div className="min-h-screen bg-background">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/teams" element={<Teams />} />
-              <Route path="/tournaments" element={<Tournaments />} />
-              <Route path="/news" element={<News />} />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Toaster />
-        </div>
-      </Router>
-    </NotificationProvider>
+    <Router>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/tournaments" element={<Tournaments />} />
+            <Route path="/news" element={<News />} />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Toaster />
+      </div>
+    </Router>
   );
 }
 

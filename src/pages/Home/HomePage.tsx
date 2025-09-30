@@ -1,371 +1,193 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { eslTheme } from '../../styles/esl-theme';
-import { useApp } from '../../contexts/AppContext';
-import { useToast } from '../../contexts/NotificationContext';
-import { Match, Tournament, News, User } from '../../types';
-import { TrendingUp, Users, Calendar, Award, Play, Star } from 'react-feather';
-
-const HomeContainer = styled.div`
-  min-height: 100vh;
-  background: ${eslTheme.colors.bg.primary};
-  color: ${eslTheme.colors.text.primary};
-`;
-
-const HeroSection = styled.section`
-  background: linear-gradient(135deg, 
-    ${eslTheme.colors.bg.primary} 0%, 
-    ${eslTheme.colors.bg.secondary} 50%, 
-    ${eslTheme.colors.bg.tertiary} 100%
-  );
-  padding: 4rem 2rem 2rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-  }
-`;
-
-const HeroTitle = styled.h1`
-  font-family: ${eslTheme.fonts.accent};
-  font-size: 3.5rem;
-  font-weight: ${eslTheme.fontWeights.black};
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
-  
-  background: linear-gradient(135deg, 
-    ${eslTheme.colors.white} 0%, 
-    ${eslTheme.colors.text.secondary} 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-
-  @media (max-width: ${eslTheme.breakpoints.tablet}) {
-    font-size: 2.5rem;
-    letter-spacing: 2px;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: ${eslTheme.colors.text.secondary};
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  z-index: 1;
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  max-width: 800px;
-  margin: 2rem auto;
-  position: relative;
-  z-index: 1;
-`;
-
-const StatCard = styled.div`
-  background: ${eslTheme.colors.bg.elevated};
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.lg};
-  padding: 1.5rem;
-  text-align: center;
-  transition: all ${eslTheme.transitions.medium};
-  
-  &:hover {
-    transform: translateY(-2px);
-    background: ${eslTheme.colors.bg.secondary};
-    border-color: ${eslTheme.colors.border.medium};
-    box-shadow: ${eslTheme.shadows.lg};
-  }
-`;
-
-const StatIcon = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-  color: ${eslTheme.colors.text.secondary};
-`;
-
-const StatNumber = styled.div`
-  font-family: ${eslTheme.fonts.accent};
-  font-size: 2rem;
-  font-weight: ${eslTheme.fontWeights.bold};
-  color: ${eslTheme.colors.white};
-  margin-bottom: 0.25rem;
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: ${eslTheme.colors.text.tertiary};
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
-
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  @media (max-width: ${eslTheme.breakpoints.desktop}) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const MainContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-`;
-
-const Sidebar = styled.aside`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const SectionCard = styled.div<{ polished?: boolean }>`
-  background: ${props => props.polished ? 
-    `linear-gradient(135deg, ${eslTheme.colors.bg.secondary} 0%, ${eslTheme.colors.bg.tertiary} 100%)` :
-    eslTheme.colors.bg.secondary
-  };
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.lg};
-  padding: 1.5rem;
-  transition: all ${eslTheme.transitions.medium};
-  
-  &:hover {
-    border-color: ${eslTheme.colors.border.medium};
-    ${props => props.polished ? `
-      transform: translateY(-1px);
-      box-shadow: ${eslTheme.shadows.lg};
-    ` : ''}
-  }
-`;
-
-const SectionTitle = styled.h2`
-  font-family: ${eslTheme.fonts.accent};
-  font-size: 1.5rem;
-  font-weight: ${eslTheme.fontWeights.bold};
-  color: ${eslTheme.colors.white};
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
-
-const MatchCard = styled.div<{ polished?: boolean }>`
-  background: ${props => props.polished ? 
-    eslTheme.colors.bg.elevated : 
-    eslTheme.colors.bg.tertiary
-  };
-  border: 1px solid ${eslTheme.colors.border.light};
-  border-radius: ${eslTheme.borderRadius.md};
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: all ${eslTheme.transitions.fast};
-  
-  &:hover {
-    background: ${eslTheme.colors.bg.elevated};
-    border-color: ${eslTheme.colors.border.medium};
-    ${props => props.polished ? `
-      transform: scale(1.02);
-    ` : ''}
-  }
-`;
-
-const MatchTeams = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-`;
-
-const TeamName = styled.span`
-  font-weight: ${eslTheme.fontWeights.medium};
-  color: ${eslTheme.colors.white};
-`;
-
-const MatchScore = styled.span`
-  font-family: ${eslTheme.fonts.accent};
-  font-weight: ${eslTheme.fontWeights.bold};
-  color: ${eslTheme.colors.text.secondary};
-`;
-
-const MatchTime = styled.div`
-  font-size: 0.875rem;
-  color: ${eslTheme.colors.text.tertiary};
-  text-align: center;
-`;
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { Trophy, Users, Calendar, TrendingUp, Play, Newspaper } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { format } from 'date-fns';
 
 const HomePage: React.FC = () => {
-  const { state } = useApp();
-  const toast = useToast();
-  const [liveMatches, setLiveMatches] = useState<Match[]>([]);
-  const [upcomingTournaments, setUpcomingTournaments] = useState<Tournament[]>([]);
-  const [latestNews, setLatestNews] = useState<News[]>([]);
+  const { data: matches, loading: matchesLoading } = useSupabaseData('matches', (query) => 
+    query.select(`
+      *,
+      teams!matches_team1_id_fkey(id, name, tag, logo_url),
+      teams_team2:teams!matches_team2_id_fkey(id, name, tag, logo_url)
+    `).eq('status', 'live').limit(5)
+  );
 
-  const isPolished = state.uiMode === 'polished';
+  const { data: tournaments, loading: tournamentsLoading } = useSupabaseData('tournaments', (query) => 
+    query.select(`
+      *,
+      game:games(name)
+    `).eq('status', 'registration_open').limit(3)
+  );
 
-  useEffect(() => {
-    // Load data on component mount
-    loadDashboardData();
-  }, []);
+  const { data: news, loading: newsLoading } = useSupabaseData('news', (query) => 
+    query.select('*').eq('status', 'published').order('published_at', { ascending: false }).limit(3)
+  );
 
-  const loadDashboardData = async () => {
-    try {
-      // Mock data - in real app this would fetch from API
-      setLiveMatches([
-        {
-          id: '1',
-          team1: { 
-            id: '1', name: 'Team Alpha', tag: 'ALPHA', 
-            members: [], captain: '1', game: { id: '1', name: 'CS2', shortName: 'CS2', icon: '', isActive: true, modes: [] }, 
-            stats: { matchesPlayed: 15, wins: 12, losses: 3, draws: 0, winRate: 80, points: 1250, ranking: 1 },
-            createdAt: new Date(), isActive: true 
-          },
-          team2: { 
-            id: '2', name: 'Team Beta', tag: 'BETA', 
-            members: [], captain: '2', game: { id: '1', name: 'CS2', shortName: 'CS2', icon: '', isActive: true, modes: [] },
-            stats: { matchesPlayed: 18, wins: 10, losses: 8, draws: 0, winRate: 55.6, points: 1100, ranking: 3 },
-            createdAt: new Date(), isActive: true 
-          },
-          score1: 13,
-          score2: 8,
-          status: 'live',
-          startedAt: new Date(),
-          map: 'de_dust2'
-        }
-      ]);
+  const stats = [
+    { icon: Users, label: 'Активных игроков', value: '1,247' },
+    { icon: Trophy, label: 'Турниров', value: '89' },
+    { icon: Calendar, label: 'Матчей сыграно', value: '156' },
+    { icon: TrendingUp, label: 'Призовой фонд', value: '$50K' },
+  ];
 
-      toast.success('Dashboard data loaded successfully');
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      toast.error('Failed to load dashboard data');
-    }
-  };
+  if (matchesLoading || tournamentsLoading || newsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <HomeContainer>
-      <HeroSection>
-        <HeroTitle>WAY Esports</HeroTitle>
-        <HeroSubtitle>
-          Professional Gaming Excellence. Compete. Dominate. Win.
-        </HeroSubtitle>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-background via-secondary to-muted py-16 px-4 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05)_0%,transparent_50%)] pointer-events-none" />
         
-        <StatsGrid>
-          <StatCard>
-            <StatIcon><Users size={24} /></StatIcon>
-            <StatNumber>1,247</StatNumber>
-            <StatLabel>Active Players</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatIcon><Award size={24} /></StatIcon>
-            <StatNumber>89</StatNumber>
-            <StatLabel>Tournaments</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatIcon><Calendar size={24} /></StatIcon>
-            <StatNumber>156</StatNumber>
-            <StatLabel>Matches Played</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatIcon><TrendingUp size={24} /></StatIcon>
-            <StatNumber>$50K</StatNumber>
-            <StatLabel>Prize Pool</StatLabel>
-          </StatCard>
-        </StatsGrid>
-      </HeroSection>
+        <div className="relative z-10 container mx-auto">
+          <h1 className="text-5xl md:text-6xl font-black uppercase tracking-wider mb-4 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            WAY Esports
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Профессиональный киберспорт. Соревнуйся. Доминируй. Побеждай.
+          </p>
 
-      <ContentGrid>
-        <MainContent>
-          <SectionCard polished={isPolished}>
-            <SectionTitle>
-              <Play size={20} style={{ marginRight: '0.5rem', display: 'inline' }} />
-              Live Matches
-            </SectionTitle>
-            {liveMatches.length > 0 ? (
-              liveMatches.map((match) => (
-                <MatchCard key={match.id} polished={isPolished}>
-                  <MatchTeams>
-                    <TeamName>{match.team1.name}</TeamName>
-                    <MatchScore>{match.score1} - {match.score2}</MatchScore>
-                    <TeamName>{match.team2.name}</TeamName>
-                  </MatchTeams>
-                  <MatchTime>
-                    🔴 LIVE • {match.map}
-                  </MatchTime>
-                </MatchCard>
-              ))
-            ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                color: eslTheme.colors.text.tertiary, 
-                padding: '2rem' 
-              }}>
-                No live matches at the moment
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <Card key={index} className="p-6 text-center hover:shadow-lg transition-all hover:-translate-y-1">
+                  <Icon className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                  <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    {stat.label}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Live Matches */}
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Play className="h-6 w-6" />
+                Живые матчи
+              </h2>
+              {matches.length > 0 ? (
+                <div className="space-y-3">
+                  {matches.map((match: any) => (
+                    <Card key={match.id} className="p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{match.teams?.name || 'Team 1'}</span>
+                        <span className="font-bold text-2xl px-4">
+                          {match.score1} - {match.score2}
+                        </span>
+                        <span className="font-medium">{match.teams_team2?.name || 'Team 2'}</span>
+                      </div>
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Badge variant="destructive" className="gap-1">
+                          <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                          LIVE
+                        </Badge>
+                        {match.map && <span className="ml-2">• {match.map}</span>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Play className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Нет активных матчей</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Recent News */}
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Newspaper className="h-6 w-6" />
+                Последние новости
+              </h2>
+              {news.length > 0 ? (
+                <div className="space-y-3">
+                  {news.map((article: any) => (
+                    <Card key={article.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <h3 className="font-semibold mb-1">{article.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        {article.excerpt}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {article.published_at && format(new Date(article.published_at), 'dd MMM yyyy')}
+                        <Badge variant="outline">{article.category}</Badge>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Newspaper className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Новости скоро появятся</p>
+                </div>
+              )}
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Upcoming Tournaments */}
+            <Card className="p-6">
+              <h2 className="text-xl font-bold mb-4">Предстоящие турниры</h2>
+              {tournaments.length > 0 ? (
+                <div className="space-y-3">
+                  {tournaments.map((tournament: any) => (
+                    <Card key={tournament.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer">
+                      <h3 className="font-semibold text-sm mb-1">{tournament.name}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {tournament.game?.name}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="default" className="text-xs">
+                          Регистрация открыта
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ${tournament.prize_pool?.toLocaleString()}
+                        </span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Trophy className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Нет предстоящих турниров</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Top Players */}
+            <Card className="p-6">
+              <h2 className="text-xl font-bold mb-4">Топ игроки</h2>
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Таблица лидеров скоро</p>
               </div>
-            )}
-          </SectionCard>
-
-          <SectionCard polished={isPolished}>
-            <SectionTitle>
-              <Star size={20} style={{ marginRight: '0.5rem', display: 'inline' }} />
-              Recent News
-            </SectionTitle>
-            <div style={{ 
-              textAlign: 'center', 
-              color: eslTheme.colors.text.tertiary, 
-              padding: '2rem' 
-            }}>
-              Latest esports news coming soon...
-            </div>
-          </SectionCard>
-        </MainContent>
-
-        <Sidebar>
-          <SectionCard polished={isPolished}>
-            <SectionTitle>Upcoming Tournaments</SectionTitle>
-            <div style={{ 
-              textAlign: 'center', 
-              color: eslTheme.colors.text.tertiary, 
-              padding: '1rem' 
-            }}>
-              No upcoming tournaments
-            </div>
-          </SectionCard>
-
-          <SectionCard polished={isPolished}>
-            <SectionTitle>Top Players</SectionTitle>
-            <div style={{ 
-              textAlign: 'center', 
-              color: eslTheme.colors.text.tertiary, 
-              padding: '1rem' 
-            }}>
-              Leaderboard coming soon...
-            </div>
-          </SectionCard>
-        </Sidebar>
-      </ContentGrid>
-    </HomeContainer>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
