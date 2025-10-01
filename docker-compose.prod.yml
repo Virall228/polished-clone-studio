@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - frontend.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # If you have a separate backend service, uncomment this:
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "4000:4000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - PORT=4000
+  #   env_file:
+  #     - backend.env
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - db
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # If you have a Telegram bot, uncomment this:
+  # bot:
+  #   build:
+  #     context: ./bot
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - NODE_ENV=production
+  #   env_file:
+  #     - bot.env
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - backend

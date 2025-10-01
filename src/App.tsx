@@ -12,6 +12,7 @@ import News from '@/pages/News';
 import Profile from '@/pages/Profile';
 import Auth from '@/pages/Auth';
 import Admin from '@/pages/Admin';
+import Subscription from '@/pages/Subscription';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -39,6 +40,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/subscription" 
+              element={
+                <ProtectedRoute>
+                  <Subscription />
                 </ProtectedRoute>
               } 
             />

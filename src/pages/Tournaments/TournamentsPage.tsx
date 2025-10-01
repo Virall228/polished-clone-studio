@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
+import { TournamentRegistration } from '@/components/TournamentRegistration';
 import { Trophy, Plus, Calendar, Users, DollarSign } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const TournamentsPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string>('');
 
   const { data: tournaments, loading } = useSupabaseData('tournaments', (query) => 
     query.select(`
@@ -35,13 +40,12 @@ const TournamentsPage: React.FC = () => {
   };
 
   const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      registration_open: 'Регистрация открыта',
-      upcoming: 'Предстоящий',
-      ongoing: 'Идёт',
-      completed: 'Завершён',
-    };
-    return labels[status] || status;
+    return t(`tournaments.${status}`, status);
+  };
+
+  const handleRegisterClick = (tournamentId: string) => {
+    setSelectedTournamentId(tournamentId);
+    setRegistrationOpen(true);
   };
 
   if (loading) {
@@ -57,12 +61,12 @@ const TournamentsPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <Trophy className="h-8 w-8" />
-          <h1 className="text-3xl font-bold">Турниры</h1>
+          <h1 className="text-3xl font-bold">{t('tournaments.title')}</h1>
         </div>
         {user && (
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            Создать турнир
+            {t('tournaments.createTournament')}
           </Button>
         )}
       </div>
@@ -115,12 +119,13 @@ const TournamentsPage: React.FC = () => {
               <div className="flex gap-2 pt-4 border-t">
                 <Button 
                   className="flex-1"
-                  disabled={tournament.status !== 'registration_open'}
+                  disabled={tournament.status !== 'registration_open' || !user}
+                  onClick={() => handleRegisterClick(tournament.id)}
                 >
-                  {tournament.status === 'registration_open' ? 'Зарегистрироваться' : 'Просмотр'}
+                  {tournament.status === 'registration_open' ? t('tournaments.register') : t('tournaments.registered')}
                 </Button>
                 <Button variant="outline">
-                  Поделиться
+                  {t('common.share', 'Share')}
                 </Button>
               </div>
             </Card>
@@ -129,10 +134,16 @@ const TournamentsPage: React.FC = () => {
       ) : (
         <div className="text-center py-12">
           <Trophy className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">Турниры не найдены</h3>
-          <p className="text-muted-foreground">Создайте первый турнир!</p>
+          <h3 className="text-xl font-semibold mb-2">{t('tournaments.noTournaments', 'No tournaments found')}</h3>
+          <p className="text-muted-foreground">{t('tournaments.createFirst', 'Create the first tournament!')}</p>
         </div>
       )}
+
+      <TournamentRegistration
+        tournamentId={selectedTournamentId}
+        open={registrationOpen}
+        onOpenChange={setRegistrationOpen}
+      />
     </div>
   );
 };

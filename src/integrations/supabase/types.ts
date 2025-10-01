@@ -337,6 +337,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           id: string
@@ -486,12 +525,42 @@ export type Database = {
           },
         ]
       }
+      terms_agreements: {
+        Row: {
+          agreed_at: string
+          id: string
+          ip_address: string | null
+          terms_version: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          agreed_at?: string
+          id?: string
+          ip_address?: string | null
+          terms_version: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          agreed_at?: string
+          id?: string
+          ip_address?: string | null
+          terms_version?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tournament_participants: {
         Row: {
           id: string
           is_active: boolean
           registered_at: string
           team_id: string | null
+          terms_agreed: boolean
+          terms_agreed_at: string | null
+          terms_version: string | null
           tournament_id: string
           user_id: string | null
         }
@@ -500,6 +569,9 @@ export type Database = {
           is_active?: boolean
           registered_at?: string
           team_id?: string | null
+          terms_agreed?: boolean
+          terms_agreed_at?: string | null
+          terms_version?: string | null
           tournament_id: string
           user_id?: string | null
         }
@@ -508,6 +580,9 @@ export type Database = {
           is_active?: boolean
           registered_at?: string
           team_id?: string | null
+          terms_agreed?: boolean
+          terms_agreed_at?: string | null
+          terms_version?: string | null
           tournament_id?: string
           user_id?: string | null
         }

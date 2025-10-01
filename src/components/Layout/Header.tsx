@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -13,11 +14,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, User, LogOut, Settings, Home, Users, Trophy, Newspaper } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const Header: React.FC = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     try {
@@ -29,14 +32,15 @@ const Header: React.FC = () => {
   };
 
   const navigationItems = [
-    { to: '/', label: 'Главная', icon: Home },
-    { to: '/teams', label: 'Команды', icon: Users },
-    { to: '/tournaments', label: 'Турниры', icon: Trophy },
-    { to: '/news', label: 'Новости', icon: Newspaper },
+    { to: '/', label: t('nav.home'), icon: Home },
+    { to: '/teams', label: t('nav.teams'), icon: Users },
+    { to: '/tournaments', label: t('nav.tournaments'), icon: Trophy },
+    { to: '/news', label: t('nav.news'), icon: Newspaper },
   ];
 
   const adminItems = user ? [
-    { to: '/admin', label: 'Админ-панель', icon: Settings },
+    { to: '/admin', label: t('nav.admin'), icon: Settings },
+    { to: '/subscription', label: t('nav.subscription'), icon: Settings },
   ] : [];
 
   const MobileNav = () => (
@@ -98,7 +102,7 @@ const Header: React.FC = () => {
                   onClick={() => navigate('/profile')}
                 >
                   <Settings className="h-4 w-4" />
-                  Профиль
+                  {t('nav.profile')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -106,7 +110,7 @@ const Header: React.FC = () => {
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4" />
-                  Выйти
+                  {t('nav.logout')}
                 </Button>
               </div>
             ) : (
@@ -115,7 +119,7 @@ const Header: React.FC = () => {
                   className="w-full"
                   onClick={() => navigate('/auth')}
                 >
-                  Войти
+                  {t('nav.login')}
                 </Button>
               </div>
             )}
@@ -153,6 +157,7 @@ const Header: React.FC = () => {
 
         {/* User Menu / Auth */}
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -179,23 +184,23 @@ const Header: React.FC = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/profile')}>
                   <User className="mr-2 h-4 w-4" />
-                  <span>Профиль</span>
+                  <span>{t('nav.profile')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                <DropdownMenuItem onClick={() => navigate('/subscription')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Настройки</span>
+                  <span>{t('nav.subscription')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Выйти</span>
+                  <span>{t('nav.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             !isMobile && (
               <Button onClick={() => navigate('/auth')}>
-                Войти
+                {t('nav.login')}
               </Button>
             )
           )}
