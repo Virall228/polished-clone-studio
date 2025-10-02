@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   profile: any | null;
+  roles: string[];
+  isAdmin: boolean;
 }
 
 export function useAuth() {
@@ -15,38 +17,34 @@ export function useAuth() {
     user: null,
     session: null,
     loading: true,
-    profile: null
+    profile: null,
+    roles: [],
+    isAdmin: false,
   });
-  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setState(prev => ({
           ...prev,
           session,
           user: session?.user ?? null,
-          loading: false
         }));
 
-        // Fetch user profile when logged in
+        // Fetch user profile and roles when logged in
         if (session?.user) {
-          setTimeout(async () => {
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              setState(prev => ({ ...prev, profile }));
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-            }
+          setTimeout(() => {
+            fetchUserProfileAndRoles(session.user.id);
           }, 0);
         } else {
-          setState(prev => ({ ...prev, profile: null }));
+          setState(prev => ({
+            ...prev,
+            profile: null,
+            roles: [],
+            isAdmin: false,
+            loading: false,
+          }));
         }
       }
     );
@@ -57,12 +55,54 @@ export function useAuth() {
         ...prev,
         session,
         user: session?.user ?? null,
-        loading: false
       }));
+
+      if (session?.user) {
+        fetchUserProfileAndRoles(session.user.id);
+      } else {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+        }));
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfileAndRoles = async (userId: string) => {
+    try {
+      // Fetch profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      // Fetch roles
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+
+      const roles = userRoles?.map(r => r.role) || [];
+      const isAdmin = roles.includes('admin');
+
+      setState(prev => ({
+        ...prev,
+        profile,
+        roles,
+        isAdmin,
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Error fetching profile and roles:', error);
+      setState(prev => ({
+        ...prev,
+        loading: false,
+      }));
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -72,18 +112,11 @@ export function useAuth() {
       });
 
       if (error) {
-        toast({
-          title: "Ошибка входа",
-          description: error.message,
-          variant: "destructive"
-        });
+        toast.error(error.message);
         throw error;
       }
 
-      toast({
-        title: "Успешный вход",
-        description: "Добро пожаловать в WAY Esports!",
-      });
+      toast.success('Successfully signed in!');
     } catch (error: any) {
       throw error;
     }
@@ -93,7 +126,7 @@ export function useAuth() {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -107,18 +140,19 @@ export function useAuth() {
       });
 
       if (error) {
-        toast({
-          title: "Ошибка регистрации",
-          description: error.message,
-          variant: "destructive"
-        });
+        toast.error(error.message);
         throw error;
       }
 
-      toast({
-        title: "Регистрация успешна",
-        description: "Проверьте email для подтверждения аккаунта",
-      });
+      // Set session to persist for 30 days
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+      }
+
+      toast.success('Successfully signed up! Please check your email to confirm your account.');
     } catch (error: any) {
       throw error;
     }
@@ -129,27 +163,25 @@ export function useAuth() {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        toast({
-          title: "Ошибка выхода",
-          description: error.message,
-          variant: "destructive"
-        });
+        toast.error(error.message);
         throw error;
       }
 
-      toast({
-        title: "Выход выполнен",
-        description: "До свидания!",
-      });
+      toast.success('Successfully signed out!');
     } catch (error: any) {
       throw error;
     }
+  };
+
+  const hasRole = (role: string) => {
+    return state.roles.includes(role);
   };
 
   return {
     ...state,
     signIn,
     signUp,
-    signOut
+    signOut,
+    hasRole,
   };
 }

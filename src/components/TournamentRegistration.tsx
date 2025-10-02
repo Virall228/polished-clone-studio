@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,11 +25,62 @@ export const TournamentRegistration = ({ tournamentId, open, onOpenChange }: Tou
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [tournament, setTournament] = useState<any>(null);
+  const [teamMembers, setTeamMembers] = useState<{ [key: string]: number }>({});
 
   const { data: myTeams, loading: teamsLoading } = useSupabaseData('team_members', {
     user_id: user?.id,
     is_active: true,
   });
+
+  useEffect(() => {
+    if (tournamentId && open) {
+      fetchTournament();
+    }
+  }, [tournamentId, open]);
+
+  useEffect(() => {
+    if (myTeams && myTeams.length > 0) {
+      fetchTeamMemberCounts();
+    }
+  }, [myTeams]);
+
+  const fetchTournament = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('id', tournamentId)
+        .single();
+
+      if (error) throw error;
+      setTournament(data);
+    } catch (error) {
+      console.error('Error fetching tournament:', error);
+    }
+  };
+
+  const fetchTeamMemberCounts = async () => {
+    try {
+      const teamIds = myTeams.map((m: any) => m.team_id);
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .in('team_id', teamIds)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      const counts: { [key: string]: number } = {};
+      data.forEach((member: any) => {
+        counts[member.team_id] = (counts[member.team_id] || 0) + 1;
+      });
+
+      setTeamMembers(counts);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
 
   const handleRegister = async () => {
     if (!user) {
@@ -44,6 +96,17 @@ export const TournamentRegistration = ({ tournamentId, open, onOpenChange }: Tou
     if (!agreedToTerms) {
       toast.error(t('tournaments.mustAgreeToTerms'));
       return;
+    }
+
+    // Check team size
+    if (tournament && teamMembers[selectedTeamId]) {
+      const memberCount = teamMembers[selectedTeamId];
+      const requiredSize = tournament.team_size;
+
+      if (memberCount !== requiredSize) {
+        toast.error(`Team must have exactly ${requiredSize} players to join this tournament. Your team has ${memberCount} players.`);
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -104,11 +167,22 @@ export const TournamentRegistration = ({ tournamentId, open, onOpenChange }: Tou
                 {!teamsLoading && myTeams?.length === 0 && (
                   <SelectItem value="none" disabled>{t('tournaments.noTeam')}</SelectItem>
                 )}
-                {myTeams?.map((membership: any) => (
-                  <SelectItem key={membership.team_id} value={membership.team_id}>
-                    Team {membership.team_id.slice(0, 8)}
-                  </SelectItem>
-                ))}
+                {myTeams?.map((membership: any) => {
+                  const memberCount = teamMembers[membership.team_id] || 0;
+                  const requiredSize = tournament?.team_size || 0;
+                  const isValid = memberCount === requiredSize;
+                  
+                  return (
+                    <SelectItem key={membership.team_id} value={membership.team_id}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>Team {membership.team_id.slice(0, 8)}</span>
+                        <Badge variant={isValid ? 'default' : 'destructive'} className="ml-2">
+                          {memberCount}/{requiredSize}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

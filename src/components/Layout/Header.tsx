@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const Header: React.FC = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { t } = useTranslation();
@@ -38,8 +38,11 @@ const Header: React.FC = () => {
     { to: '/news', label: t('nav.news'), icon: Newspaper },
   ];
 
-  const adminItems = user ? [
+  const adminItems = isAdmin ? [
     { to: '/admin', label: t('nav.admin'), icon: Settings },
+  ] : [];
+
+  const userItems = user ? [
     { to: '/subscription', label: t('nav.subscription'), icon: Settings },
   ] : [];
 
@@ -143,7 +146,7 @@ const Header: React.FC = () => {
         {/* Desktop Navigation */}
         {!isMobile && (
           <nav className="hidden md:flex items-center gap-6">
-            {[...navigationItems, ...adminItems].map((item) => (
+            {[...navigationItems, ...adminItems, ...userItems].map((item) => (
               <Link
                 key={item.to}
                 to={item.to}

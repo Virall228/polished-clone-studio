@@ -13,9 +13,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Users, Newspaper, Calendar } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, isAdmin, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { data: games } = useSupabaseData('games');
+
+  // Redirect if not admin
+  if (!authLoading && !isAdmin) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="py-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">403 Forbidden</h1>
+            <p className="text-muted-foreground">You do not have permission to access this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
   
   const [teamForm, setTeamForm] = useState({
     name: '',

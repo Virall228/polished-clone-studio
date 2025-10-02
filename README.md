@@ -1,6 +1,6 @@
-# WAY Esports - Full Stack Esports Platform
+# WAY Esports Platform
 
-Professional esports tournament platform with team management, internationalization, and subscription system.
+A comprehensive esports tournament management platform with team management, user profiles, achievements, and subscription system.
 
 ## 🚀 Quick Start
 
@@ -21,102 +21,56 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ### Core Functionality
 
-✅ **Team Management**
-- Create and manage teams
-- Invite/remove members
-- Team rankings and statistics
-- Role-based permissions (Captain, Player)
-
-✅ **Tournament System**
-- Create and organize tournaments
-- Multi-format support (Single/Double Elimination)
-- **Team-based registration with mandatory Terms of Service acceptance**
-- Tournament brackets and scheduling
-- Prize pool management
-
-✅ **Terms of Service (ToS)**
-- Version-controlled ToS system
-- Mandatory acceptance before tournament registration
-- Tracks user consent (version, timestamp, user agent)
-- Admin-configurable ToS versions
-
-✅ **Internationalization (i18n)**
-- **Automatic language detection** from browser
-- **Manual language switching** (EN/RU)
-- All interface text fully translated
+✅ **Multi-language Support** (English & Russian)
+- Automatic language detection from browser
+- Manual language switcher
 - Persistent language preference
 
+✅ **User Authentication**
+- 30-day session persistence ("Remember Me")
+- Secure registration and login
+- Email confirmation
+
+✅ **Team Management**
+- Create teams with unique names and tags
+- Invite players via shareable links
+- Team size validation for tournaments
+- Leave/join teams
+
+✅ **Tournament Registration**
+- Team-based registration with size validation (2v2, 5v5, etc.)
+- Mandatory Terms of Service acceptance
+- Tournament invite system
+- Multiple tournament formats
+
+✅ **User Profiles**
+- Avatar upload (5MB max, JPEG/PNG/WEBP/GIF)
+- Statistics tracking (games, wins, losses, points)
+- Achievement showcase
+- Subscription status display
+- Team membership history
+
 ✅ **Subscription System**
-- Free, Pro, and Premium tiers
+- Free, Pro, and Premium plans
 - Feature-based access control
 - Subscription management UI
-- Stripe integration ready (or local model)
+- Status tracking
 
-✅ **User Profiles & Authentication**
-- Secure user registration and login
-- Profile management
-- Statistics and achievements
-- Session persistence
+✅ **Admin Panel** (vb917185@gmail.com only)
+- Create tournaments and news
+- Manage content
+- 403 Forbidden for non-admins
 
 ✅ **News System**
 - Create and publish articles
 - Category-based organization
 - View tracking
-- Rich content support
 
-✅ **Admin Panel**
-- Manage teams, tournaments, and news
-- User administration
-- System configuration
+### User Roles & Permissions
 
-### Technical Features
-
-- **React 18** + TypeScript + Vite
-- **Tailwind CSS** with shadcn/ui components
-- **Supabase** for backend (Database, Auth, Edge Functions)
-- **i18next** for internationalization
-- **Dark mode** by default
-- **Fully responsive** mobile-first design
-- **Docker-ready** for instant deployment
-
----
-
-## 📁 Project Structure
-
-```
-way-esports/
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── Layout/        # Header, Footer, Navigation
-│   │   ├── ui/            # shadcn/ui components
-│   │   ├── LanguageSwitcher.tsx
-│   │   └── TournamentRegistration.tsx
-│   ├── pages/             # Application pages
-│   │   ├── Home/          # Dashboard
-│   │   ├── Teams/         # Team management
-│   │   ├── Tournaments/   # Tournament system
-│   │   ├── News/          # News articles
-│   │   ├── Profile/       # User profiles
-│   │   ├── Subscription/  # Subscription management
-│   │   ├── Admin/         # Admin panel
-│   │   └── Auth/          # Authentication
-│   ├── hooks/             # Custom React hooks
-│   │   ├── useAuth.ts     # Authentication hook
-│   │   └── useSupabaseData.ts
-│   ├── i18n/              # Internationalization
-│   │   ├── config.ts      # i18n configuration
-│   │   └── locales/       # Translation files (en.json, ru.json)
-│   ├── integrations/      # External services
-│   │   └── supabase/      # Supabase client & types
-│   ├── types/             # TypeScript definitions
-│   └── index.css          # Global styles
-├── supabase/              # Supabase configuration
-│   └── migrations/        # Database migrations
-├── Dockerfile             # Docker configuration
-├── docker-compose.prod.yml # Production deployment
-├── DEPLOYMENT.md          # Detailed deployment guide
-└── README.md             # This file
-```
+- **Admin** (`vb917185@gmail.com`) - Full access to admin panel, can create tournaments and news
+- **Regular Users** - Can create and join teams, register for tournaments
+- **Role-based UI** - Admin features hidden from non-admin users
 
 ---
 
@@ -126,38 +80,71 @@ way-esports/
 |----------|-------------|
 | **Frontend** | React 18, TypeScript, Vite |
 | **Styling** | Tailwind CSS, shadcn/ui |
-| **Backend** | Supabase (PostgreSQL, Auth, Edge Functions) |
-| **i18n** | react-i18next, i18next-browser-languagedetector |
+| **Backend** | Supabase (PostgreSQL, Auth, Storage) |
+| **i18n** | react-i18next |
 | **Deployment** | Docker, Docker Compose, PM2 |
-| **Testing** | Vitest, React Testing Library |
+
+---
+
+## 📁 Project Structure
+
+```
+way-esports/
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── Layout/        # Header, ProtectedRoute
+│   │   ├── ui/            # shadcn/ui components
+│   │   ├── LanguageSwitcher.tsx
+│   │   ├── AvatarUpload.tsx
+│   │   └── TournamentRegistration.tsx
+│   ├── pages/             # Application pages
+│   │   ├── Home/
+│   │   ├── Teams/
+│   │   │   ├── TeamsPage.tsx
+│   │   │   ├── MyTeamsPage.tsx
+│   │   │   └── JoinTeamPage.tsx
+│   │   ├── Tournaments/
+│   │   ├── News/
+│   │   ├── Profile/
+│   │   ├── Subscription/
+│   │   ├── Admin/
+│   │   └── Auth/
+│   ├── hooks/             # Custom React hooks
+│   │   ├── useAuth.ts
+│   │   ├── useTeams.ts
+│   │   └── useSupabaseData.ts
+│   ├── i18n/              # Internationalization
+│   │   ├── config.ts
+│   │   └── locales/       # en.json, ru.json
+│   └── integrations/
+│       └── supabase/      # Supabase client & types
+├── supabase/
+│   ├── config.toml
+│   └── migrations/
+├── Dockerfile
+├── docker-compose.prod.yml
+├── DEPLOYMENT.md
+└── README.md
+```
 
 ---
 
 ## 🔧 Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+### Frontend (`frontend.env`)
 
-```env
-# Supabase Configuration (Already configured)
+```bash
+# Supabase Configuration
 VITE_SUPABASE_PROJECT_ID=kezbdbbeqocqtdxyhtqs
 VITE_SUPABASE_URL=https://kezbdbbeqocqtdxyhtqs.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your_key_here
+VITE_SUPABASE_PUBLISHABLE_KEY=<your_key>
 
-# Terms of Service Version
+# Terms of Service
 VITE_TERMS_VERSION=1.0.0
 
-# Environment
+# Application
 NODE_ENV=production
 ```
-
-### Required Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID | `kezbdbbeqocqtdxyhtqs` |
-| `VITE_SUPABASE_URL` | Supabase project URL | `https://xxx.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Public API key | `eyJhbG...` |
-| `VITE_TERMS_VERSION` | Current ToS version | `1.0.0` |
 
 ---
 
@@ -179,10 +166,6 @@ cd way-esports
 # Install dependencies
 npm install
 
-# Setup environment
-cp .env.example .env
-# Edit .env with your values
-
 # Start development server
 npm run dev
 ```
@@ -196,7 +179,6 @@ npm run dev          # Start dev server
 npm run build        # Build for production
 npm run preview      # Preview production build
 npm run lint         # Run ESLint
-npm run type-check   # TypeScript type checking
 ```
 
 ---
@@ -205,32 +187,22 @@ npm run type-check   # TypeScript type checking
 
 ### Option 1: Docker (Recommended)
 
-**One-command deployment:**
-
 ```bash
+# One-command deployment
 docker compose -f docker-compose.prod.yml up -d --build
-```
 
-**Manage deployment:**
-
-```bash
 # View logs
 docker compose -f docker-compose.prod.yml logs -f
 
 # Stop services
 docker compose -f docker-compose.prod.yml down
-
-# Restart services
-docker compose -f docker-compose.prod.yml restart
 ```
 
 ### Option 2: PM2 (Without Docker)
 
 ```bash
-# Install dependencies
-npm ci --omit=dev
-
 # Build application
+npm ci --omit=dev
 npm run build
 
 # Install PM2 globally
@@ -241,68 +213,9 @@ pm2 start npm --name "way-esports" -- run preview
 
 # View logs
 pm2 logs way-esports
-
-# Setup auto-start
-pm2 startup
-pm2 save
-```
-
-### Option 3: Manual Deployment
-
-```bash
-# Build
-npm ci --omit=dev
-npm run build
-
-# Serve static files
-npx serve -s dist -l 3000
 ```
 
 📖 **See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide**
-
----
-
-## 🧪 Testing Critical Features
-
-### 1. Team Creation & Registration Flow
-
-```
-✓ User signs up/logs in
-✓ Creates a team with name and tag
-✓ Team appears in teams list
-✓ User can join/leave teams
-```
-
-### 2. Tournament Registration with ToS
-
-```
-✓ User has a team
-✓ Opens tournament registration
-✓ Selects team from dropdown
-✓ Checks "I agree to Terms of Service" checkbox
-✓ Cannot submit without checking ToS
-✓ Registration succeeds with team and ToS version saved
-```
-
-### 3. Language Switching
-
-```
-✓ App detects browser language automatically
-✓ User clicks language switcher (EN/RU)
-✓ All interface text updates
-✓ Language preference persists in localStorage
-✓ Reload maintains language selection
-```
-
-### 4. Subscription Management
-
-```
-✓ User views current subscription plan
-✓ Selects different plan tier
-✓ Plan upgrade/downgrade works
-✓ Subscription status displays correctly
-✓ Feature access controlled by plan
-```
 
 ---
 
@@ -310,34 +223,108 @@ npx serve -s dist -l 3000
 
 ### Key Tables
 
-**teams**
-- id, name, tag, captain_id, game_id, logo_url, description
-- Relations: team_members, team_stats
-
-**tournaments**
-- id, name, description, game_id, organizer_id, prize_pool
-- status: upcoming, registration_open, ongoing, completed
-- Relations: tournament_participants, matches
-
-**tournament_participants**
-- id, tournament_id, team_id, user_id
-- **terms_agreed**: boolean (required for registration)
-- **terms_version**: text (ToS version accepted)
-- **terms_agreed_at**: timestamp
-
-**terms_agreements**
-- id, user_id, terms_version, agreed_at
-- ip_address, user_agent
-- Tracks all ToS acceptances
-
-**subscriptions**
-- id, user_id, plan_type (free/pro/premium)
-- status: active, canceled, past_due, trialing
-- stripe_subscription_id, current_period_start/end
+**user_roles**
+- Role-based access control (admin, moderator, user)
+- Security definer functions for role checking
 
 **profiles**
-- id, user_id, username, avatar_url
-- first_name, last_name, role
+- User profile information
+- Avatar URL, username, first/last name
+- Online status, join date
+
+**teams**
+- Team information (name, tag, logo, description)
+- Captain and game associations
+
+**team_members**
+- Team membership records
+- Roles: captain, player
+
+**team_invites**
+- Invitation tokens for joining teams
+- Expiration and usage tracking
+
+**tournaments**
+- Tournament details (name, description, format)
+- Team size requirements
+- Prize pool, max participants
+
+**tournament_participants**
+- Registration records
+- Terms agreement tracking
+
+**tournament_invites**
+- Tournament invitation tokens
+
+**user_stats**
+- Player statistics (games, wins, losses)
+- Win rate, points, rank
+
+**achievements**
+- Achievement definitions
+- Rarity levels
+
+**user_achievements**
+- User achievement records
+
+**subscriptions**
+- Subscription plans (free, pro, premium)
+- Status tracking (active, canceled, past_due)
+
+**terms_agreements**
+- Terms of Service acceptance records
+- Version tracking
+
+### Storage Buckets
+
+**avatars**
+- User profile pictures
+- 5MB max, public access
+- Supported: JPEG, PNG, WEBP, GIF
+
+---
+
+## 🧪 Testing Checklist
+
+### Authentication
+- [ ] User can sign up and receive confirmation email
+- [ ] User stays logged in for 30+ days
+- [ ] User can sign in and sign out
+
+### Teams
+- [ ] User can create a team
+- [ ] Captain can generate invite link
+- [ ] User can join team via invite link
+- [ ] User can leave team
+- [ ] Team member count displays correctly
+
+### Tournaments
+- [ ] User can view tournaments
+- [ ] Team size validation works (e.g., 2v2 requires exactly 2 players)
+- [ ] Terms of Service checkbox is required
+- [ ] Registration succeeds with valid team
+- [ ] Error shown for invalid team size
+
+### i18n
+- [ ] Language auto-detects on first visit
+- [ ] Language switcher works
+- [ ] All UI text translates correctly
+- [ ] Language preference persists
+
+### Profiles
+- [ ] User can upload avatar
+- [ ] Avatar persists until replaced
+- [ ] Statistics display correctly
+- [ ] Achievements display correctly
+- [ ] Subscription status shows (if applicable)
+- [ ] Public profiles viewable
+
+### Admin
+- [ ] Admin can access `/admin` panel
+- [ ] Regular users see 403 on `/admin`
+- [ ] Admin can create tournaments
+- [ ] Admin can create news
+- [ ] Non-admins don't see admin buttons in navigation
 
 ---
 
@@ -353,22 +340,9 @@ npx serve -s dist -l 3000
 1. Create translation file: `src/i18n/locales/[lang].json`
 2. Copy structure from `en.json`
 3. Translate all keys
-4. Import in `src/i18n/config.ts`:
+4. Import in `src/i18n/config.ts`
 
-```typescript
-import newLang from './locales/newLang.json';
-
-i18n.init({
-  resources: {
-    en: { translation: en },
-    ru: { translation: ru },
-    newLang: { translation: newLang }, // Add here
-  },
-  // ...
-});
-```
-
-### Using Translations in Code
+### Using Translations
 
 ```typescript
 import { useTranslation } from 'react-i18next';
@@ -390,93 +364,51 @@ function MyComponent() {
 ## 🔐 Security Features
 
 - ✅ **Row Level Security (RLS)** on all Supabase tables
+- ✅ **Role-based access control** with security definer functions
 - ✅ **Terms of Service** mandatory acceptance with audit trail
-- ✅ **Secure authentication** with Supabase Auth
+- ✅ **Secure authentication** with 30-day sessions
 - ✅ **Protected routes** for authenticated users
-- ✅ **Input validation** on forms
-- ✅ **Environment variable** protection
+- ✅ **Admin-only routes** with 403 error handling
+- ✅ **Secure file uploads** with type and size validation
+- ✅ **Password strength** requirements
 
 ---
 
-## 📝 Terms of Service System
+## 📝 Admin Access
 
-### How It Works
+Only the user with email **`vb917185@gmail.com`** has admin privileges.
 
-1. **Version Control**
-   - ToS version stored in `VITE_TERMS_VERSION` env variable
-   - Each version tracked separately in database
+Admin users can:
+- Access `/admin` panel
+- Create tournaments
+- Create news articles
+- See "Admin" link in navigation
+- Manage content
 
-2. **Mandatory Acceptance**
-   - Tournament registration requires ToS checkbox
-   - Cannot proceed without acceptance
-   - Prevents accidental registration
+Non-admin users:
+- Do not see "Admin" in navigation
+- Receive 403 Forbidden when accessing `/admin`
+- Cannot see "Create Tournament" or "Create News" buttons
 
-3. **Audit Trail**
-   - Every acceptance recorded in `terms_agreements` table
-   - Tracks: user_id, version, timestamp, user_agent
-   - Complies with legal requirements
-
-4. **Implementation**
-   ```typescript
-   // Tournament registration checks ToS
-   const { terms_agreed, terms_version, terms_agreed_at } = formData;
-   
-   if (!terms_agreed) {
-     throw new Error('Must agree to Terms of Service');
-   }
-   
-   // Record in terms_agreements table
-   await supabase.from('terms_agreements').insert({
-     user_id,
-     terms_version: VITE_TERMS_VERSION,
-     agreed_at: new Date()
-   });
-   ```
-
-### Updating Terms
-
-1. Update `VITE_TERMS_VERSION` in `.env`
-2. Users must re-accept for new registrations
-3. Old acceptances remain valid for their version
-
----
-
-## 🎯 Roadmap
-
-- [ ] Real-time match updates
-- [ ] Live tournament brackets
-- [ ] In-app notifications
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics dashboard
-- [ ] Stream integration (Twitch, YouTube)
-- [ ] More payment providers
-- [ ] Additional languages (ES, DE, FR)
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
-5. Open Pull Request
+Admin privileges are enforced through:
+- Database-level user_roles table
+- Security definer functions
+- Frontend role checking
+- Protected routes with role validation
 
 ---
 
 ## 📄 License
 
-This project is proprietary. All rights reserved.
+MIT
 
 ---
 
 ## 🆘 Support
 
 - **Documentation:** See [DEPLOYMENT.md](./DEPLOYMENT.md)
-- **Issues:** Open an issue on GitHub
-- **Email:** support@way-esports.com
+- **Supabase Docs:** [supabase.com/docs](https://supabase.com/docs)
+- **React Docs:** [react.dev](https://react.dev)
 
 ---
 
@@ -485,8 +417,9 @@ This project is proprietary. All rights reserved.
 Before going live:
 
 - [ ] All environment variables configured
-- [ ] Supabase tables created
-- [ ] RLS policies enabled
+- [ ] Supabase migrations run successfully
+- [ ] RLS policies enabled and tested
+- [ ] Admin user role assigned to vb917185@gmail.com
 - [ ] Terms of Service version set
 - [ ] Language files complete
 - [ ] Docker build successful
@@ -497,6 +430,4 @@ Before going live:
 
 ---
 
-**Built with ❤️ for the esports community**
-
-WAY Esports - Where champions are made
+**Built for the esports community** 🎮

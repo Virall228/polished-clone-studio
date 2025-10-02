@@ -124,6 +124,7 @@
     "stats": "Statistics",
     "gamesPlayed": "Games Played",
     "rank": "Rank",
-    "points": "Points"
+    "points": "Points",
+    "joined": "Joined"
   }
 }

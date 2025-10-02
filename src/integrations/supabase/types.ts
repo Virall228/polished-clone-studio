@@ -376,6 +376,50 @@ export type Database = {
         }
         Relationships: []
       }
+      team_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          team_id: string
+          token: string
+          uses_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          team_id: string
+          token: string
+          uses_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          team_id?: string
+          token?: string
+          uses_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           id: string
@@ -552,6 +596,60 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          team_id: string
+          token: string
+          tournament_id: string
+          uses_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          team_id: string
+          token: string
+          tournament_id: string
+          uses_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          team_id?: string
+          token?: string
+          tournament_id?: string
+          uses_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_invites_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_participants: {
         Row: {
           id: string
@@ -626,6 +724,7 @@ export type Database = {
           rules: string
           start_date: string
           status: Database["public"]["Enums"]["tournament_status"]
+          team_size: number
           updated_at: string
         }
         Insert: {
@@ -643,6 +742,7 @@ export type Database = {
           rules: string
           start_date: string
           status?: Database["public"]["Enums"]["tournament_status"]
+          team_size?: number
           updated_at?: string
         }
         Update: {
@@ -660,6 +760,7 @@ export type Database = {
           rules?: string
           start_date?: string
           status?: Database["public"]["Enums"]["tournament_status"]
+          team_size?: number
           updated_at?: string
         }
         Relationships: [
@@ -715,6 +816,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_stats: {
         Row: {
           created_at: string
@@ -767,10 +889,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       achievement_rarity: "common" | "rare" | "epic" | "legendary"
+      app_role: "admin" | "moderator" | "user"
       match_status:
         | "scheduled"
         | "live"
@@ -934,6 +1063,7 @@ export const Constants = {
   public: {
     Enums: {
       achievement_rarity: ["common", "rare", "epic", "legendary"],
+      app_role: ["admin", "moderator", "user"],
       match_status: [
         "scheduled",
         "live",
